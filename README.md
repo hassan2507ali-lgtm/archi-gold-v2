@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+🚀 ArchiGold Terminal v2
+ArchiGold Terminal adalah dashboard analisis pasar terintegrasi yang membandingkan performa saham PT Archi Indonesia Tbk (ARCHI.JK) dengan Emas Global (GC=F) secara real-time. Proyek ini dibangun untuk mendemonstrasikan kemampuan korelasi data statistik dalam konteks pasar modal.
 
-## Getting Started
+🛠️ Tech Stack
+Framework: Next.js 14 (App Router)
 
-First, run the development server:
+Language: TypeScript (Strongly Typed)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Styling: Tailwind CSS
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Visualization: Recharts (Composed & Area Charts)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Data Provider: Yahoo Finance API (via yahoo-finance2)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+📈 Fitur Utama
+1. Analisis Korelasi Pearson (r)
 
-## Learn More
+Mengimplementasikan algoritma Pearson Correlation Coefficient untuk mengukur kekuatan hubungan linier antara harga emas dunia dan saham ARCHI secara dinamis berdasarkan timeframe yang dipilih.
 
-To learn more about Next.js, take a look at the following resources:
+Tujuannya: Memberikan wawasan apakah pergerakan harga emas merupakan indikator utama bagi investor ARCHI.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. Indikator Teknikal Terintegrasi
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Dilengkapi dengan dua indikator utama untuk analisis momentum:
 
-## Deploy on Vercel
+MACD (Moving Average Convergence Divergence): Untuk mendeteksi perubahan tren harga saham ARCHI.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+RSI (Relative Strength Index): Untuk memantau kondisi overbought dan oversold pada pasar.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. Arsitektur Data yang Tangguh (Hybrid Fallback)
+
+Sebagai seorang IT Enterprise Architect, saya merancang sistem ini dengan mekanisme fallback otomatis. Jika API penyedia data mengalami kendala, sistem akan beralih ke data simulasi historis untuk menjaga fungsionalitas UI tetap berjalan stabil.
+
+4. Visualisasi Rebased
+
+Semua data dihitung ulang (rebasing) ke angka 0% pada awal periode yang dipilih, memungkinkan perbandingan performa "apple-to-apple" antara instrumen ekuitas dan komoditas.
