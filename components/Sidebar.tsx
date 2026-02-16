@@ -17,7 +17,7 @@ export default function Sidebar() {
     {
       title: "INTELLIGENCE",
       items: [
-        { name: "Archi Analyst AI", path: "/analyst", icon: "🧠" },
+        { name: "Archi Analyst ", path: "/analyst", icon: "🧠" },
         { name: "Reports", path: "/reports", icon: "📑" },
       ]
     }

@@ -16,13 +16,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning ditambahkan untuk mencegah error akibat ekstensi browser
+    <html lang="en" suppressHydrationWarning>
       <body className={`${inter.className} bg-[#020617] text-slate-100`}>
         <div className="flex min-h-screen">
-          {/* Sidebar Component */}
+          {/* Sidebar navigasi utama */}
           <Sidebar />
           
-          {/* Main Content Area */}
+          {/* Area Konten Utama */}
           <main className="flex-1 overflow-x-hidden">
             {children}
           </main>
