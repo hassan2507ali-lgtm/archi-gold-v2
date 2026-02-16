@@ -10,11 +10,10 @@ export default function AnalystPage() {
   const [loading, setLoading] = useState(true);
   const [timeframe, setTimeframe] = useState<Timeframe>('1Y'); 
   
-  // State Data
   const [selectedPoint, setSelectedPoint] = useState<any | null>(null);
   const [report, setReport] = useState<any | null>(null);
 
-  // Fetch Data
+  // 1. Fetch Data
   useEffect(() => {
     async function fetchData() {
       setLoading(true);
@@ -33,9 +32,11 @@ export default function AnalystPage() {
     fetchData();
   }, [timeframe]);
 
-  // FUNGSI HANDLE KLIK (Langsung Hitung Anomaly)
+  // 2. Handle Klik dari Chart
   const handleChartClick = (point: any) => {
-    console.log("⚡ Parent Page Menerima:", point);
+    if (!point) return;
+
+    console.log("⚡ Analysing:", point.date);
     setSelectedPoint(point);
 
     if (!chartData.length) return;
@@ -44,7 +45,6 @@ export default function AnalystPage() {
     let comparisonPoint: any;
     let periodLabel = "";
 
-    // Tentukan Titik Pembanding
     if (timeframe === '1Y') {
         const startOfYear = new Date(clickDate.getFullYear(), 0, 1);
         comparisonPoint = chartData.find(d => new Date(d.date) >= startOfYear) || chartData[0];
@@ -58,9 +58,14 @@ export default function AnalystPage() {
         periodLabel = "7 Hari Terakhir";
     }
 
-    const calcGrowth = (curr: number, base: number) => ((curr - base) / base) * 100;
+    // Fallback
+    if (!comparisonPoint) comparisonPoint = chartData[0];
 
-    // Set Report agar Tabel Muncul
+    const calcGrowth = (curr: number, base: number) => {
+        if (!base || base === 0) return 0;
+        return ((curr - base) / base) * 100;
+    };
+
     setReport({
         periodLabel,
         startDate: comparisonPoint.date,
@@ -77,7 +82,6 @@ export default function AnalystPage() {
   const formatIDR = (val: number) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(val);
   const formatUSD = (val: number) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(val);
 
-  // Logic Anomaly Detector
   const correlation = useMemo(() => {
     if (!report) return { status: "WAITING FOR CLICK...", color: "text-slate-500", bg: "bg-slate-500/10", desc: "Silakan klik chart di atas untuk melihat analisis." };
     
@@ -87,8 +91,7 @@ export default function AnalystPage() {
     if (g > 0 && a < 0) return { status: "NEGATIVE DIVERGENCE", color: "text-red-400", bg: "bg-red-500/10", desc: "Bahaya: Emas naik, tapi saham ARCI malah turun." };
     if (g < 0 && a > 0) return { status: "OUTPERFORMANCE", color: "text-emerald-400", bg: "bg-emerald-500/10", desc: "Kuat: ARCI mampu naik meski harga Emas turun." };
     if ((g > 0 && a > 0) || (g < 0 && a < 0)) return { status: "POSITIVE CORRELATION", color: "text-blue-400", bg: "bg-blue-500/10", desc: "Normal: Saham selaras dengan komoditas." };
-    
-    return { status: "NEUTRAL", color: "text-slate-400", bg: "bg-slate-500/10", desc: "Pergerakan harga relatif datar." };
+    return { status: "NEUTRAL", color: "text-slate-400", bg: "bg-slate-500/10", desc: "Flat." };
   }, [report]);
 
   return (
@@ -102,10 +105,9 @@ export default function AnalystPage() {
                     🧠 Archi <span className="text-purple-500">Analyst AI</span>
                 </h1>
                 <p className="text-slate-400 text-sm">
-                    Klik grafik untuk melihat performa dan deteksi anomali.
+                    Klik grafik (menggunakan posisi mouse) untuk analisis.
                 </p>
             </div>
-            
             <div className="flex bg-slate-900 p-1 rounded-xl border border-slate-800">
                 {(['1W', '1M', '1Y'] as Timeframe[]).map((tf) => (
                     <button key={tf} onClick={() => setTimeframe(tf)} className={`px-6 py-2 rounded-lg text-xs font-bold transition-all ${timeframe === tf ? 'bg-purple-600 text-white shadow-lg' : 'text-slate-500 hover:text-white'}`}>{tf}</button>
@@ -113,10 +115,11 @@ export default function AnalystPage() {
             </div>
         </div>
 
-        {/* 1. Chart Section */}
+        {/* Chart Section */}
         <div className="bg-slate-900/40 border border-slate-800 rounded-[2rem] p-8 shadow-2xl relative min-h-[500px]">
              <div className="flex justify-between items-center mb-4 ml-2">
                  <h2 className="text-lg font-bold">👆 Tap Chart to Analyze</h2>
+                 <span className="text-[10px] bg-slate-800 px-3 py-1 rounded-full text-slate-400 border border-slate-700">Mode: {timeframe}</span>
              </div>
 
             {loading ? (
@@ -130,66 +133,38 @@ export default function AnalystPage() {
             )}
         </div>
 
-        {/* 2. Anomaly Table (Always Visible) */}
+        {/* Anomaly Table */}
         <div className="animate-in fade-in slide-in-from-bottom-6 duration-700 space-y-6">
             
-            {/* Kartu Harga */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
                     <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-yellow-500">🟡 Gold (Commodity)</h4>
-                        {report && (
-                            <span className={`text-xl font-black ${report.goldGrowth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {report.goldGrowth > 0 ? '▲' : '▼'} {Math.abs(report.goldGrowth).toFixed(2)}%
-                            </span>
-                        )}
+                        <h4 className="font-bold text-yellow-500">🟡 Gold</h4>
+                        {report && <span className={`text-xl font-black ${report.goldGrowth >= 0 ? 'text-green-400' : 'text-red-400'}`}>{report.goldGrowth.toFixed(2)}%</span>}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
-                        {report ? `${formatUSD(report.startGold)} ➔ ${formatUSD(report.endGold)}` : 'Menunggu klik...'}
-                    </div>
+                    <div className="text-xs text-slate-500 mt-2">{report ? `${formatUSD(report.startGold)} ➔ ${formatUSD(report.endGold)}` : '-'}</div>
                 </div>
-
                 <div className="bg-slate-950/50 p-6 rounded-2xl border border-slate-800">
                     <div className="flex justify-between items-start">
-                        <h4 className="font-bold text-blue-500">🔵 ARCI (Stock)</h4>
-                        {report && (
-                            <span className={`text-xl font-black ${report.archiGrowth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
-                                {report.archiGrowth > 0 ? '▲' : '▼'} {Math.abs(report.archiGrowth).toFixed(2)}%
-                            </span>
-                        )}
+                        <h4 className="font-bold text-blue-500">🔵 ARCI</h4>
+                        {report && <span className={`text-xl font-black ${report.archiGrowth >= 0 ? 'text-green-400' : 'text-red-400'}`}>{report.archiGrowth.toFixed(2)}%</span>}
                     </div>
-                    <div className="text-xs text-slate-500 mt-2">
-                        {report ? `${formatIDR(report.startArchi)} ➔ ${formatIDR(report.endArchi)}` : 'Menunggu klik...'}
-                    </div>
+                    <div className="text-xs text-slate-500 mt-2">{report ? `${formatIDR(report.startArchi)} ➔ ${formatIDR(report.endArchi)}` : '-'}</div>
                 </div>
             </div>
 
-            {/* TABEL ANOMALY DETECTOR */}
             <div className="bg-slate-900 border border-slate-800 p-8 rounded-[2rem] relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent opacity-50"></div>
-                
-                <h3 className="text-lg font-bold text-white mb-6 flex items-center gap-2">
-                    🕵️ Correlation & Anomaly Detector
-                </h3>
-
+                <h3 className="text-lg font-bold text-white mb-6">🕵️ Correlation & Anomaly Detector</h3>
                 <div className="overflow-hidden rounded-xl border border-slate-800">
                     <table className="w-full text-sm text-left">
                         <thead className="bg-slate-950 text-slate-400 text-xs uppercase font-bold">
-                            <tr>
-                                <th className="px-6 py-4">Status Korelasi</th>
-                                <th className="px-6 py-4 text-right">Insight AI</th>
-                            </tr>
+                            <tr><th className="px-6 py-4">Status</th><th className="px-6 py-4 text-right">Insight</th></tr>
                         </thead>
                         <tbody className="divide-y divide-slate-800 bg-slate-900/50">
                             <tr>
-                                <td className="px-6 py-4">
-                                    <span className={`px-3 py-1 rounded-lg text-xs font-black border ${correlation.color} ${correlation.bg} border-transparent`}>
-                                        {correlation.status}
-                                    </span>
-                                </td>
-                                <td className="px-6 py-4 text-right text-slate-300 italic max-w-md ml-auto">
-                                    "{correlation.desc}"
-                                </td>
+                                <td className="px-6 py-4"><span className={`px-3 py-1 rounded-lg text-xs font-black border ${correlation.color} ${correlation.bg} border-transparent`}>{correlation.status}</span></td>
+                                <td className="px-6 py-4 text-right text-slate-300 italic">"{correlation.desc}"</td>
                             </tr>
                         </tbody>
                     </table>
@@ -197,7 +172,6 @@ export default function AnalystPage() {
             </div>
 
         </div>
-
       </div>
     </div>
   );
